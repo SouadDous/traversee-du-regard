@@ -1,0 +1,35 @@
+#progress-fill {
+  width: 11.111%;
+}
+
+.possibilities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem 2rem;
+  max-width: 34rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  line-height: 1.5;
+}
+
+.possibilities li::before {
+  content: "— ";
+}
+
+.timer-ring {
+  width: min(64vw, 19rem);
+}
+
+.timer-phase {
+  max-width: 12rem;
+  font-size: clamp(1.05rem, 2.3vw, 1.35rem);
+}
+
+@media (max-width: 620px) {
+  .possibilities {
+    grid-template-columns: 1fr;
+  }
+}
