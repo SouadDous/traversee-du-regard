@@ -5,6 +5,7 @@ Prototype des expériences numériques d’Éditions LÀ.
 - Jour 1 — S’arrêter : `/`
 - Jour 2 — Nommer : `/jour-2/`
 - Jour 3 — Commenter : `/jour-3/`
+- Jour 4 — Retenir : `/jour-4/`
 
 ## Tester localement
 
