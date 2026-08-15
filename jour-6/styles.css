@@ -1,0 +1,26 @@
+#progress-fill {
+  width: 10%;
+}
+
+.contacts {
+  max-width: 34rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  line-height: 1.7;
+}
+
+.contacts li::before {
+  content: "— ";
+}
+
+.timer-ring {
+  width: min(64vw, 19rem);
+}
+
+.timer-phase {
+  max-width: 12rem;
+  font-size: clamp(1.05rem, 2.3vw, 1.35rem);
+}
