@@ -1,0 +1,39 @@
+#progress-fill {
+  width: 11.111%;
+}
+
+.examples {
+  max-width: 34rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.7;
+}
+
+.examples li::before {
+  content: "— ";
+}
+
+.contrast {
+  display: grid;
+  gap: 1rem;
+  max-width: 36rem;
+  margin-top: 2rem;
+}
+
+.contrast p {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 1px solid var(--line);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.5;
+}
+
+.observation-note {
+  max-width: 25rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
