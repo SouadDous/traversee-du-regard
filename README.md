@@ -7,6 +7,7 @@ Prototype des expériences numériques d’Éditions LÀ.
 - Jour 3 — Commenter : `/jour-3/`
 - Jour 4 — Retenir : `/jour-4/`
 - Jour 5 — Corriger : `/jour-5/`
+- Jour 6 — Séparer : `/jour-6/`
 
 ## Tester localement
 
