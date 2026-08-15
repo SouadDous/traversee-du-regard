@@ -103,7 +103,7 @@ const steps = [
           <p>Demain, nous regarderons ce que les mots font aux choses.</p>
         </div>
         <a class="primary" href="https://www.editionsla.com/la-traversee">Quitter l’expérience</a>
-        <div><button class="text-button" id="restart" type="button">Recommencer</button></div>
+        <div class="restart-action"><button class="text-button" id="restart" type="button">Recommencer</button></div>
       </div>`,
     final: true,
   },
