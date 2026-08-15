@@ -3,6 +3,7 @@ const backButton = document.querySelector("#back");
 const nextButton = document.querySelector("#next");
 const progressLabel = document.querySelector("#progress-label");
 const progressFill = document.querySelector("#progress-fill");
+const guideAudio = document.querySelector("#guide-audio");
 
 const steps = [
   {
@@ -43,7 +44,10 @@ const steps = [
           <p>Ne la touchez pas encore.</p>
           <p class="quiet">Observez simplement le mouvement qui voudrait redresser, déplacer, arranger ou améliorer.</p>
         </div>
-        <button class="primary" id="start-observation" type="button">Observer sans corriger</button>
+        <div class="mode-actions">
+          <button class="primary" id="start-audio" type="button">Observer avec la voix</button>
+          <button class="secondary-button" id="start-silent" type="button">Observer en silence</button>
+        </div>
       </div>`,
     manual: true,
   },
@@ -124,11 +128,14 @@ let currentStep = 0;
 let timerId = null;
 let remainingSeconds = 45;
 let timerRunning = false;
+let audioMode = false;
 
 function stopTimer() {
   if (timerId) window.clearInterval(timerId);
   timerId = null;
   timerRunning = false;
+  guideAudio.pause();
+  guideAudio.currentTime = 0;
 }
 
 function updateProgress() {
@@ -144,12 +151,16 @@ function renderStep() {
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].timer || steps[currentStep].final);
   stage.focus({ preventScroll: true });
 
-  document.querySelector("#start-observation")?.addEventListener("click", () => {
+  function beginObservation(useAudio) {
     remainingSeconds = 45;
+    audioMode = useAudio;
     currentStep = 3;
     renderStep();
     startTimer();
-  });
+  }
+
+  document.querySelector("#start-audio")?.addEventListener("click", () => beginObservation(true));
+  document.querySelector("#start-silent")?.addEventListener("click", () => beginObservation(false));
 
   document.querySelector("#restart")?.addEventListener("click", () => {
     currentStep = 0;
@@ -181,16 +192,22 @@ function updateTimerDisplay() {
 function startTimer() {
   timerRunning = true;
   updateTimerDisplay();
+  guideAudio.currentTime = 0;
+  if (audioMode) guideAudio.play().catch(() => {});
   const pauseButton = document.querySelector("#pause-timer");
   const resetButton = document.querySelector("#reset-timer");
 
   pauseButton.addEventListener("click", () => {
     if (timerRunning) {
-      stopTimer();
+      if (timerId) window.clearInterval(timerId);
+      timerId = null;
+      timerRunning = false;
+      if (audioMode) guideAudio.pause();
       pauseButton.textContent = "Reprendre";
     } else {
       timerRunning = true;
       pauseButton.textContent = "Pause";
+      if (audioMode) guideAudio.play().catch(() => {});
       runTimer();
     }
   });
@@ -201,6 +218,8 @@ function startTimer() {
     updateTimerDisplay();
     timerRunning = true;
     pauseButton.textContent = "Pause";
+    guideAudio.currentTime = 0;
+    if (audioMode) guideAudio.play().catch(() => {});
     runTimer();
   });
 
