@@ -8,6 +8,7 @@ Prototype des expériences numériques d’Éditions LÀ.
 - Jour 4 — Retenir : `/jour-4/`
 - Jour 5 — Corriger : `/jour-5/`
 - Jour 6 — Séparer : `/jour-6/`
+- Jour 7 — LÀ : `/jour-7/`
 
 ## Tester localement
 
