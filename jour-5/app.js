@@ -51,10 +51,10 @@ const steps = [
     html: `
       <div class="stage-inner timer-wrap">
         <p class="eyebrow">L’observation</p>
-        <div class="timer-ring" id="timer-ring" role="timer" aria-label="Deux minutes d’observation">
+        <div class="timer-ring" id="timer-ring" role="timer" aria-label="Quarante-cinq secondes d’observation">
           <div class="timer-content">
             <div class="timer-phase" id="timer-phase">Regardez ce que vous appelez imparfait.</div>
-            <div class="timer-time" id="timer-time">02:00</div>
+            <div class="timer-time" id="timer-time">00:45</div>
           </div>
         </div>
         <div class="timer-actions">
@@ -67,10 +67,13 @@ const steps = [
   {
     html: `
       <div class="stage-inner">
-        <p class="eyebrow">Sans le modèle</p>
-        <h2>La chose est toujours la même.</h2>
-        <p class="prompt">Mais que devient l’imperfection lorsque le modèle disparaît&nbsp;?</p>
-        <div class="copy"><p>Pendant un instant, il n’y avait peut-être plus rien à corriger.</p></div>
+        <p class="eyebrow">Choisir le geste</p>
+        <h2>Maintenant, choisissez.</h2>
+        <p class="prompt">Corrigez cette chose, ou laissez-la comme elle est.</p>
+        <div class="copy">
+          <p>L’important n’est pas votre décision.</p>
+          <p>C’est d’avoir vu ce qui précédait le geste.</p>
+        </div>
       </div>`,
   },
   {
@@ -119,7 +122,7 @@ const steps = [
 
 let currentStep = 0;
 let timerId = null;
-let remainingSeconds = 120;
+let remainingSeconds = 45;
 let timerRunning = false;
 
 function stopTimer() {
@@ -142,7 +145,7 @@ function renderStep() {
   stage.focus({ preventScroll: true });
 
   document.querySelector("#start-observation")?.addEventListener("click", () => {
-    remainingSeconds = 120;
+    remainingSeconds = 45;
     currentStep = 3;
     renderStep();
     startTimer();
@@ -155,7 +158,7 @@ function renderStep() {
 }
 
 function timerPhase(seconds) {
-  if (seconds > 60) return "Regardez ce que vous appelez imparfait. Où se trouve précisément l’imperfection ?";
+  if (seconds > 25) return "Observez l’impulsion de corriger. Que voudrait-elle changer ?";
   return "Retirez l’image de ce que cette chose devrait être. Regardez-la sans la corriger.";
 }
 
@@ -172,7 +175,7 @@ function updateTimerDisplay() {
   if (!phase || !time || !ring) return;
   phase.textContent = timerPhase(remainingSeconds);
   time.textContent = formatTime(remainingSeconds);
-  ring.style.setProperty("--progress", `${((120 - remainingSeconds) / 120) * 360}deg`);
+  ring.style.setProperty("--progress", `${((45 - remainingSeconds) / 45) * 360}deg`);
 }
 
 function startTimer() {
@@ -194,7 +197,7 @@ function startTimer() {
 
   resetButton.addEventListener("click", () => {
     stopTimer();
-    remainingSeconds = 120;
+    remainingSeconds = 45;
     updateTimerDisplay();
     timerRunning = true;
     pauseButton.textContent = "Pause";
@@ -211,7 +214,7 @@ function runTimer() {
     updateTimerDisplay();
     if (remainingSeconds <= 0) {
       stopTimer();
-      remainingSeconds = 120;
+      remainingSeconds = 45;
       currentStep = 4;
       renderStep();
     }
