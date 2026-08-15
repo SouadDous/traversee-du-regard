@@ -1,0 +1,49 @@
+#progress-fill {
+  width: 10%;
+}
+
+.sequence {
+  max-width: 32rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  line-height: 1.75;
+}
+
+.sequence li::before {
+  content: "— ";
+}
+
+.stillness {
+  min-height: 11rem;
+  display: grid;
+  align-content: center;
+}
+
+.final-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 2rem;
+}
+
+.final-actions .primary {
+  display: inline-block;
+  margin-top: 0;
+  text-decoration: none;
+}
+
+.secondary-link {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.final-line {
+  max-width: 18ch;
+}
