@@ -1,0 +1,14 @@
+#progress-fill {
+  width: 11.111%;
+}
+
+.observation-note {
+  max-width: 24rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.restart-action {
+  margin-top: 1.25rem;
+}
