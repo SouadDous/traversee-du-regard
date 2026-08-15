@@ -28,6 +28,34 @@
   font-size: clamp(1.05rem, 2.3vw, 1.35rem);
 }
 
+.mode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 2rem;
+}
+
+.mode-actions .primary {
+  margin-top: 0;
+}
+
+.secondary-button {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.3rem 0;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.secondary-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
 @media (max-width: 620px) {
   .possibilities {
     grid-template-columns: 1fr;
