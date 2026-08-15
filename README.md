@@ -1,6 +1,9 @@
-# La Traversée du regard — Jour 1
+# La Traversée du regard
 
-Prototype statique de la première expérience numérique d’Éditions LÀ.
+Prototype des expériences numériques d’Éditions LÀ.
+
+- Jour 1 — S’arrêter : `/`
+- Jour 2 — Nommer : `/jour-2/`
 
 ## Tester localement
 
