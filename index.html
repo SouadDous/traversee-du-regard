@@ -20,6 +20,7 @@
           <span id="progress-fill"></span>
         </div>
       </div>
+      <button class="voice-control" id="voice-control" type="button" hidden>Mode audio · Pause</button>
 
       <section class="stage" id="stage" tabindex="-1"></section>
 
@@ -33,7 +34,8 @@
       </nav>
     </main>
 
+    <audio id="narration-audio" preload="auto"></audio>
     <noscript>Cette expérience nécessite JavaScript pour progresser d’un écran à l’autre.</noscript>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
   </body>
 </html>

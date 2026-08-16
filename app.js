@@ -3,6 +3,19 @@ const backButton = document.querySelector("#back");
 const nextButton = document.querySelector("#next");
 const progressLabel = document.querySelector("#progress-label");
 const progressFill = document.querySelector("#progress-fill");
+const narrationAudio = document.querySelector("#narration-audio");
+const voiceControl = document.querySelector("#voice-control");
+
+const audioFiles = [
+  "jour-1-ecran-1.mp3",
+  "jour-1-ecran-2.mp3",
+  "jour-1-ecran-3.mp3",
+  "jour-1-guide-audio.mp3",
+  "jour-1-ecran-5.mp3",
+  "jour-1-ecran-6.mp3",
+  "jour-1-ecran-7.mp3",
+  "jour-1-ecran-8.mp3",
+];
 
 const steps = [
   {
@@ -15,7 +28,12 @@ const steps = [
           <p class="quiet">Assurez-vous simplement de ne pas être dérangé(e).</p>
         </div>
         <div class="horizon" aria-hidden="true"></div>
+        <div class="mode-actions" id="experience-mode">
+          <button class="primary" id="choose-audio" type="button">Écouter l’expérience</button>
+          <button class="secondary-button" id="choose-reading" type="button">Lire l’expérience</button>
+        </div>
       </div>`,
+    manual: true,
   },
   {
     html: `
@@ -102,7 +120,7 @@ const steps = [
         <div class="copy">
           <p>Demain, nous regarderons ce que les mots font aux choses.</p>
         </div>
-        <a class="primary" href="https://www.editionsla.com/la-traversee">Quitter l’expérience</a>
+        <a class="primary" href="https://www.editionsla.com/">Quitter l’expérience</a>
         <div class="restart-action"><button class="text-button" id="restart" type="button">Recommencer</button></div>
       </div>`,
     final: true,
@@ -113,11 +131,74 @@ let currentStep = 0;
 let timerId = null;
 let remainingSeconds = 180;
 let timerRunning = false;
+let experienceMode = null;
+let observationFinishing = false;
+let autoAdvanceId = null;
+let autoAdvanceDeadline = 0;
+let autoAdvanceRemaining = 2000;
+let audioPaused = false;
+
+function clearAutoAdvance() {
+  if (autoAdvanceId) window.clearTimeout(autoAdvanceId);
+  autoAdvanceId = null;
+  autoAdvanceDeadline = 0;
+  autoAdvanceRemaining = 2000;
+}
 
 function stopTimer() {
   if (timerId) window.clearInterval(timerId);
   timerId = null;
   timerRunning = false;
+  observationFinishing = false;
+  narrationAudio.pause();
+  narrationAudio.currentTime = 0;
+}
+
+function stopNarration() {
+  clearAutoAdvance();
+  narrationAudio.pause();
+  narrationAudio.currentTime = 0;
+  audioPaused = false;
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function playNarration() {
+  if (experienceMode !== "audio") return;
+  audioPaused = false;
+  narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(() => {});
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function advanceAudioExperience() {
+  clearAutoAdvance();
+  if (currentStep === 2) {
+    remainingSeconds = 180;
+    currentStep = 3;
+    renderStep();
+    startTimer();
+    return;
+  }
+  if (currentStep < steps.length - 1) {
+    currentStep += 1;
+    renderStep();
+  }
+}
+
+function scheduleAutoAdvance(delay = 2000) {
+  if (experienceMode !== "audio" || currentStep === 3 || currentStep === steps.length - 1) return;
+  autoAdvanceRemaining = delay;
+  autoAdvanceDeadline = Date.now() + delay;
+  autoAdvanceId = window.setTimeout(advanceAudioExperience, delay);
+}
+
+function setExperienceMode(mode) {
+  experienceMode = mode;
+  voiceControl.hidden = mode !== "audio";
+  nextButton.hidden = false;
+  document.querySelector("#experience-mode")?.remove();
+  if (mode === "audio") playNarration();
 }
 
 function updateProgress() {
@@ -127,10 +208,12 @@ function updateProgress() {
 
 function renderStep() {
   stopTimer();
+  stopNarration();
   stage.innerHTML = steps[currentStep].html;
   updateProgress();
   backButton.hidden = currentStep === 0;
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].timer || steps[currentStep].final);
+  voiceControl.hidden = experienceMode !== "audio";
   stage.focus({ preventScroll: true });
 
   const startButton = document.querySelector("#start-timer");
@@ -143,13 +226,20 @@ function renderStep() {
     });
   }
 
+  document.querySelector("#choose-audio")?.addEventListener("click", () => setExperienceMode("audio"));
+  document.querySelector("#choose-reading")?.addEventListener("click", () => setExperienceMode("reading"));
+
   const restartButton = document.querySelector("#restart");
   if (restartButton) {
     restartButton.addEventListener("click", () => {
       currentStep = 0;
+      experienceMode = null;
+      voiceControl.hidden = true;
       renderStep();
     });
   }
+
+  if (experienceMode === "audio" && !steps[currentStep].timer) playNarration();
 }
 
 function timerPhase(seconds) {
@@ -177,17 +267,38 @@ function updateTimerDisplay() {
 function startTimer() {
   timerRunning = true;
   updateTimerDisplay();
+  if (experienceMode === "audio") {
+    narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+    narrationAudio.currentTime = 0;
+    narrationAudio.play().catch(() => {});
+  } else {
+    narrationAudio.src = "son-signature-editions-la.mp3?v=1";
+    narrationAudio.muted = true;
+    narrationAudio.play().then(() => {
+      narrationAudio.pause();
+      narrationAudio.currentTime = 0;
+      narrationAudio.muted = false;
+    }).catch(() => { narrationAudio.muted = false; });
+  }
 
   const pauseButton = document.querySelector("#pause-timer");
   const resetButton = document.querySelector("#reset-timer");
 
   pauseButton.addEventListener("click", () => {
     if (timerRunning) {
-      stopTimer();
+      if (timerId) window.clearInterval(timerId);
+      timerId = null;
+      timerRunning = false;
+      if (experienceMode === "audio") narrationAudio.pause();
       pauseButton.textContent = "Reprendre";
+      if (experienceMode === "audio") voiceControl.textContent = "Mode audio · Reprendre";
     } else {
       timerRunning = true;
       pauseButton.textContent = "Pause";
+      if (experienceMode === "audio") {
+        narrationAudio.play().catch(() => {});
+        voiceControl.textContent = "Mode audio · Pause";
+      }
       runTimer();
     }
   });
@@ -197,6 +308,7 @@ function startTimer() {
     remainingSeconds = 180;
     updateTimerDisplay();
     pauseButton.textContent = "Commencer";
+    narrationAudio.currentTime = 0;
   });
 
   runTimer();
@@ -208,12 +320,31 @@ function runTimer() {
     remainingSeconds -= 1;
     updateTimerDisplay();
     if (remainingSeconds <= 0) {
-      stopTimer();
-      remainingSeconds = 180;
-      currentStep = 4;
-      renderStep();
+      finishObservation();
     }
   }, 1000);
+}
+
+function finishObservation() {
+  if (timerId) window.clearInterval(timerId);
+  timerId = null;
+  timerRunning = false;
+  observationFinishing = true;
+  remainingSeconds = 0;
+  updateTimerDisplay();
+  const pauseButton = document.querySelector("#pause-timer");
+  if (pauseButton) pauseButton.disabled = true;
+  narrationAudio.pause();
+  narrationAudio.src = "son-signature-editions-la.mp3?v=1";
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(() => {
+    currentStep = 4;
+    renderStep();
+  });
+  narrationAudio.addEventListener("ended", () => {
+    currentStep = 4;
+    renderStep();
+  }, { once: true });
 }
 
 backButton.addEventListener("click", () => {
@@ -228,6 +359,51 @@ nextButton.addEventListener("click", () => {
     currentStep += 1;
     renderStep();
   }
+});
+
+voiceControl.addEventListener("click", () => {
+  if (steps[currentStep].timer && !observationFinishing) {
+    document.querySelector("#pause-timer")?.click();
+    return;
+  }
+  if (observationFinishing) {
+    if (narrationAudio.paused) {
+      narrationAudio.play().catch(() => {});
+      voiceControl.textContent = "Mode audio · Pause";
+    } else {
+      narrationAudio.pause();
+      voiceControl.textContent = "Mode audio · Reprendre";
+    }
+    return;
+  }
+  if (autoAdvanceId) {
+    autoAdvanceRemaining = Math.max(0, autoAdvanceDeadline - Date.now());
+    window.clearTimeout(autoAdvanceId);
+    autoAdvanceId = null;
+    audioPaused = true;
+    voiceControl.textContent = "Mode audio · Reprendre";
+    return;
+  }
+  if (audioPaused && narrationAudio.ended) {
+    audioPaused = false;
+    voiceControl.textContent = "Mode audio · Pause";
+    scheduleAutoAdvance(autoAdvanceRemaining);
+    return;
+  }
+  if (narrationAudio.paused) {
+    if (narrationAudio.ended) narrationAudio.currentTime = 0;
+    narrationAudio.play().catch(() => {});
+    audioPaused = false;
+    voiceControl.textContent = "Mode audio · Pause";
+  } else {
+    narrationAudio.pause();
+    audioPaused = true;
+    voiceControl.textContent = "Mode audio · Reprendre";
+  }
+});
+
+narrationAudio.addEventListener("ended", () => {
+  if (experienceMode === "audio" && !steps[currentStep].timer) scheduleAutoAdvance();
 });
 
 document.addEventListener("keydown", (event) => {

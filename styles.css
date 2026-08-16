@@ -149,6 +149,39 @@ h2 {
   cursor: pointer;
 }
 
+.mode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 2rem;
+}
+
+.mode-actions .primary {
+  margin-top: 0;
+}
+
+.secondary-button,
+.voice-control {
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--muted);
+  padding: 0.3rem 0;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.voice-control {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 5;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
 .timer-wrap {
   display: grid;
   justify-items: center;
@@ -240,6 +273,8 @@ h2 {
 
 .nav-button:focus-visible,
 .primary:focus-visible,
+.secondary-button:focus-visible,
+.voice-control:focus-visible,
 .text-button:focus-visible,
 .brand a:focus-visible {
   outline: 2px solid var(--ink);
@@ -281,6 +316,12 @@ h2 {
 
   .stage {
     padding: 2.5rem 0;
+  }
+
+  .voice-control {
+    top: auto;
+    right: 1.25rem;
+    bottom: 1.25rem;
   }
 }
 
