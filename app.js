@@ -17,6 +17,12 @@ const audioFiles = [
   "jour-1-ecran-8.mp3",
 ];
 
+const listeningInstructions = {
+  120: "jour-1-consigne-1.mp3",
+  80: "jour-1-consigne-2.mp3",
+  40: "jour-1-consigne-3.mp3",
+};
+
 const steps = [
   {
     html: `
@@ -268,9 +274,7 @@ function startTimer() {
   timerRunning = true;
   updateTimerDisplay();
   if (experienceMode === "audio") {
-    narrationAudio.src = `${audioFiles[currentStep]}?v=3`;
-    narrationAudio.currentTime = 0;
-    narrationAudio.play().catch(() => {});
+    playListeningInstruction(120);
   } else {
     narrationAudio.src = "son-signature-editions-la.mp3?v=3";
     narrationAudio.muted = true;
@@ -296,7 +300,11 @@ function startTimer() {
       timerRunning = true;
       pauseButton.textContent = "Pause";
       if (experienceMode === "audio") {
-        narrationAudio.play().catch(() => {});
+        if (narrationAudio.ended && listeningInstructions[remainingSeconds]) {
+          playListeningInstruction(remainingSeconds);
+        } else if (!narrationAudio.ended) {
+          narrationAudio.play().catch(() => {});
+        }
         voiceControl.textContent = "Mode audio · Pause";
       }
       runTimer();
@@ -314,11 +322,22 @@ function startTimer() {
   runTimer();
 }
 
+function playListeningInstruction(seconds) {
+  const file = listeningInstructions[seconds];
+  if (experienceMode !== "audio" || !file) return;
+  narrationAudio.src = `${file}?v=5`;
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(() => {});
+}
+
 function runTimer() {
   if (timerId) window.clearInterval(timerId);
   timerId = window.setInterval(() => {
     remainingSeconds -= 1;
     updateTimerDisplay();
+    if (remainingSeconds === 80 || remainingSeconds === 40) {
+      playListeningInstruction(remainingSeconds);
+    }
     if (remainingSeconds <= 0) {
       finishObservation();
     }
