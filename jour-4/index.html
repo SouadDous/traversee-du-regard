@@ -13,7 +13,7 @@
     <main class="experience" aria-live="polite">
       <header class="brand"><a href="https://www.editionsla.com" aria-label="Accueil — Éditions LÀ">LÀ</a></header>
       <div class="progress" aria-label="Progression dans l’expérience">
-        <span id="progress-label">1 / 9</span>
+        <span id="progress-label">1 / 10</span>
         <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
       </div>
       <section class="stage" id="stage" tabindex="-1"></section>
@@ -22,7 +22,9 @@
         <button class="nav-button nav-next" id="next" type="button" aria-label="Étape suivante"><span aria-hidden="true">→</span></button>
       </nav>
     </main>
+    <button class="voice-control" id="voice-control" type="button" hidden>Mode audio · Pause</button>
+    <audio id="narration-audio" preload="auto"></audio>
     <noscript>Cette expérience nécessite JavaScript pour progresser d’un écran à l’autre.</noscript>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
   </body>
 </html>
