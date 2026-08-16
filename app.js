@@ -165,7 +165,7 @@ function stopNarration() {
 function playNarration() {
   if (experienceMode !== "audio") return;
   audioPaused = false;
-  narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+  narrationAudio.src = `${audioFiles[currentStep]}?v=3`;
   narrationAudio.currentTime = 0;
   narrationAudio.play().catch(() => {});
   voiceControl.textContent = "Mode audio · Pause";
@@ -268,11 +268,11 @@ function startTimer() {
   timerRunning = true;
   updateTimerDisplay();
   if (experienceMode === "audio") {
-    narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+    narrationAudio.src = `${audioFiles[currentStep]}?v=3`;
     narrationAudio.currentTime = 0;
     narrationAudio.play().catch(() => {});
   } else {
-    narrationAudio.src = "son-signature-editions-la.mp3?v=1";
+    narrationAudio.src = "son-signature-editions-la.mp3?v=3";
     narrationAudio.muted = true;
     narrationAudio.play().then(() => {
       narrationAudio.pause();
@@ -335,7 +335,7 @@ function finishObservation() {
   const pauseButton = document.querySelector("#pause-timer");
   if (pauseButton) pauseButton.disabled = true;
   narrationAudio.pause();
-  narrationAudio.src = "son-signature-editions-la.mp3?v=1";
+  narrationAudio.src = "son-signature-editions-la.mp3?v=3";
   narrationAudio.currentTime = 0;
   narrationAudio.play().catch(() => {
     currentStep = 4;
