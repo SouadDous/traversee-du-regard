@@ -3,7 +3,20 @@ const backButton = document.querySelector("#back");
 const nextButton = document.querySelector("#next");
 const progressLabel = document.querySelector("#progress-label");
 const progressFill = document.querySelector("#progress-fill");
-const guideAudio = document.querySelector("#guide-audio");
+const narrationAudio = document.querySelector("#narration-audio");
+const voiceControl = document.querySelector("#voice-control");
+
+const audioFiles = [
+  "jour-5-ecran-1.mp3",
+  "jour-5-ecran-2.mp3",
+  "jour-5-ecran-3.mp3",
+  "jour-5-guide-audio.mp3",
+  "jour-5-ecran-5.mp3",
+  "jour-5-ecran-6.mp3",
+  "jour-5-ecran-7.mp3",
+  "jour-5-ecran-8.mp3",
+  "jour-5-ecran-9.mp3",
+];
 
 const steps = [
   {
@@ -17,7 +30,12 @@ const steps = [
           <p class="quiet">L’expérience dure environ cinq minutes.</p>
         </div>
         <div class="horizon" aria-hidden="true"></div>
+        <div class="mode-actions" id="experience-mode">
+          <button class="primary" id="choose-audio" type="button">Écouter l’expérience</button>
+          <button class="secondary-button" id="choose-reading" type="button">Lire l’expérience</button>
+        </div>
       </div>`,
+    manual: true,
   },
   {
     html: `
@@ -44,10 +62,7 @@ const steps = [
           <p>Ne la touchez pas encore.</p>
           <p class="quiet">Observez simplement le mouvement qui voudrait redresser, déplacer, arranger ou améliorer.</p>
         </div>
-        <div class="mode-actions">
-          <button class="primary" id="start-audio" type="button">Observer avec la voix</button>
-          <button class="secondary-button" id="start-silent" type="button">Observer en silence</button>
-        </div>
+        <button class="primary" id="start-observation" type="button">Observer sans corriger</button>
       </div>`,
     manual: true,
   },
@@ -128,14 +143,36 @@ let currentStep = 0;
 let timerId = null;
 let remainingSeconds = 45;
 let timerRunning = false;
-let audioMode = false;
+let experienceMode = null;
 
 function stopTimer() {
   if (timerId) window.clearInterval(timerId);
   timerId = null;
   timerRunning = false;
-  guideAudio.pause();
-  guideAudio.currentTime = 0;
+  narrationAudio.pause();
+  narrationAudio.currentTime = 0;
+}
+
+function stopNarration() {
+  narrationAudio.pause();
+  narrationAudio.currentTime = 0;
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function playNarration() {
+  if (experienceMode !== "audio") return;
+  narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(() => {});
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function setExperienceMode(mode) {
+  experienceMode = mode;
+  voiceControl.hidden = mode !== "audio";
+  nextButton.hidden = false;
+  document.querySelector("#experience-mode")?.remove();
+  if (mode === "audio") playNarration();
 }
 
 function updateProgress() {
@@ -145,27 +182,32 @@ function updateProgress() {
 
 function renderStep() {
   stopTimer();
+  stopNarration();
   stage.innerHTML = steps[currentStep].html;
   updateProgress();
   backButton.hidden = currentStep === 0;
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].timer || steps[currentStep].final);
   stage.focus({ preventScroll: true });
 
-  function beginObservation(useAudio) {
+  function beginObservation() {
     remainingSeconds = 45;
-    audioMode = useAudio;
     currentStep = 3;
     renderStep();
     startTimer();
   }
 
-  document.querySelector("#start-audio")?.addEventListener("click", () => beginObservation(true));
-  document.querySelector("#start-silent")?.addEventListener("click", () => beginObservation(false));
+  document.querySelector("#choose-audio")?.addEventListener("click", () => setExperienceMode("audio"));
+  document.querySelector("#choose-reading")?.addEventListener("click", () => setExperienceMode("reading"));
+  document.querySelector("#start-observation")?.addEventListener("click", beginObservation);
 
   document.querySelector("#restart")?.addEventListener("click", () => {
     currentStep = 0;
+    experienceMode = null;
+    voiceControl.hidden = true;
     renderStep();
   });
+
+  if (experienceMode === "audio" && !steps[currentStep].timer) playNarration();
 }
 
 function timerPhase(seconds) {
@@ -192,8 +234,9 @@ function updateTimerDisplay() {
 function startTimer() {
   timerRunning = true;
   updateTimerDisplay();
-  guideAudio.currentTime = 0;
-  if (audioMode) guideAudio.play().catch(() => {});
+  narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+  narrationAudio.currentTime = 0;
+  if (experienceMode === "audio") narrationAudio.play().catch(() => {});
   const pauseButton = document.querySelector("#pause-timer");
   const resetButton = document.querySelector("#reset-timer");
 
@@ -202,12 +245,12 @@ function startTimer() {
       if (timerId) window.clearInterval(timerId);
       timerId = null;
       timerRunning = false;
-      if (audioMode) guideAudio.pause();
+      if (experienceMode === "audio") narrationAudio.pause();
       pauseButton.textContent = "Reprendre";
     } else {
       timerRunning = true;
       pauseButton.textContent = "Pause";
-      if (audioMode) guideAudio.play().catch(() => {});
+      if (experienceMode === "audio") narrationAudio.play().catch(() => {});
       runTimer();
     }
   });
@@ -218,8 +261,8 @@ function startTimer() {
     updateTimerDisplay();
     timerRunning = true;
     pauseButton.textContent = "Pause";
-    guideAudio.currentTime = 0;
-    if (audioMode) guideAudio.play().catch(() => {});
+    narrationAudio.currentTime = 0;
+    if (experienceMode === "audio") narrationAudio.play().catch(() => {});
     runTimer();
   });
 
@@ -251,6 +294,16 @@ nextButton.addEventListener("click", () => {
   if (currentStep < steps.length - 1) {
     currentStep += 1;
     renderStep();
+  }
+});
+
+voiceControl.addEventListener("click", () => {
+  if (narrationAudio.paused) {
+    narrationAudio.play().catch(() => {});
+    voiceControl.textContent = "Mode audio · Pause";
+  } else {
+    narrationAudio.pause();
+    voiceControl.textContent = "Mode audio · Reprendre";
   }
 });
 

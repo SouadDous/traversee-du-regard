@@ -16,14 +16,15 @@
         <span id="progress-label">1 / 9</span>
         <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
       </div>
+      <button class="voice-control" id="voice-control" type="button" hidden>Mode audio · Pause</button>
       <section class="stage" id="stage" tabindex="-1"></section>
       <nav class="navigation" aria-label="Navigation entre les étapes">
         <button class="nav-button nav-back" id="back" type="button" aria-label="Étape précédente"><span aria-hidden="true">←</span></button>
         <button class="nav-button nav-next" id="next" type="button" aria-label="Étape suivante"><span aria-hidden="true">→</span></button>
       </nav>
     </main>
-    <audio id="guide-audio" preload="auto" src="jour-5-guide-audio.mp3?v=1"></audio>
+    <audio id="narration-audio" preload="auto"></audio>
     <noscript>Cette expérience nécessite JavaScript pour progresser d’un écran à l’autre.</noscript>
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
   </body>
 </html>

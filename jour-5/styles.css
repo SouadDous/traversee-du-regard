@@ -56,8 +56,35 @@
   outline-offset: 4px;
 }
 
+.voice-control {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 5;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  padding: 0.25rem 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.voice-control:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
 @media (max-width: 620px) {
   .possibilities {
     grid-template-columns: 1fr;
+  }
+
+  .voice-control {
+    top: auto;
+    right: 1.25rem;
+    bottom: 1.25rem;
   }
 }
