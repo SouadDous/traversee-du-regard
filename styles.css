@@ -30,6 +30,7 @@ a {
 
 .experience {
   min-height: 100svh;
+  position: relative;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
   padding: clamp(1.25rem, 3vw, 2.5rem);
@@ -247,6 +248,42 @@ h2 {
   margin-top: 1.25rem;
 }
 
+.final-landscape {
+  width: 100vw;
+  margin: clamp(3rem, 6vw, 5rem) 0 0 calc(50% - 50vw);
+  line-height: 0;
+  pointer-events: none;
+}
+
+.final-landscape img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body.is-final .experience {
+  padding-bottom: 0;
+}
+
+body.is-final .stage {
+  padding-bottom: 0;
+}
+
+body.is-final .navigation {
+  position: absolute;
+  z-index: 2;
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  bottom: clamp(1.25rem, 3vw, 2.5rem);
+  left: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+body.is-final .nav-button {
+  border-color: rgba(245, 242, 237, 0.62);
+  background: rgba(29, 29, 27, 0.08);
+  color: var(--paper);
+  backdrop-filter: blur(1px);
+}
+
 .navigation {
   display: flex;
   justify-content: space-between;
@@ -316,6 +353,10 @@ h2 {
 
   .stage {
     padding: 2.5rem 0;
+  }
+
+  .final-landscape {
+    margin-top: 3rem;
   }
 
   .voice-control {

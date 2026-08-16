@@ -162,6 +162,7 @@ const steps = [
         </div>
         <a class="primary" href="https://www.editionsla.com/la-traversee">Quitter l’expérience</a>
         <div class="restart-action"><button class="text-button" id="restart" type="button">Recommencer</button></div>
+        <figure class="final-landscape" aria-hidden="true"><img src="../assets/paysage-fin.png" alt="" /></figure>
       </div>`,
     final: true,
   },
@@ -246,6 +247,7 @@ function renderStep() {
   stopNarration();
   observationFinishing = false;
   stage.innerHTML = steps[currentStep].html;
+  document.body.classList.toggle("is-final", Boolean(steps[currentStep].final));
   updateProgress();
   backButton.hidden = currentStep === 0;
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].timer || steps[currentStep].final);
