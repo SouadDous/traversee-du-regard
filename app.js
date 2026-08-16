@@ -50,14 +50,14 @@ const steps = [
     html: `
       <div class="stage-inner">
         <p class="eyebrow">La proposition</p>
-        <h2>Pendant trois minutes, vous allez seulement écouter.</h2>
+        <h2>Pendant deux minutes, vous allez seulement écouter.</h2>
         <div class="copy">
           <p>D’abord, le son le plus proche.</p>
           <p>Puis, le son le plus lointain.</p>
           <p>Enfin, tous les sons ensemble, sans chercher à les nommer.</p>
           <p class="quiet">Rien ne doit devenir silencieux. Vous n’avez rien à réussir.</p>
         </div>
-        <button class="primary" id="start-timer" type="button">Commencer les trois minutes</button>
+        <button class="primary" id="start-timer" type="button">Commencer les deux minutes</button>
       </div>`,
     manual: true,
   },
@@ -65,10 +65,10 @@ const steps = [
     html: `
       <div class="stage-inner timer-wrap">
         <p class="eyebrow">L’écoute</p>
-        <div class="timer-ring" id="timer-ring" role="timer" aria-label="Trois minutes d’écoute">
+        <div class="timer-ring" id="timer-ring" role="timer" aria-label="Deux minutes d’écoute">
           <div class="timer-content">
             <div class="timer-phase" id="timer-phase">Le son le plus proche.</div>
-            <div class="timer-time" id="timer-time">03:00</div>
+            <div class="timer-time" id="timer-time">02:00</div>
           </div>
         </div>
         <div class="timer-actions">
@@ -129,7 +129,7 @@ const steps = [
 
 let currentStep = 0;
 let timerId = null;
-let remainingSeconds = 180;
+let remainingSeconds = 120;
 let timerRunning = false;
 let experienceMode = null;
 let observationFinishing = false;
@@ -174,7 +174,7 @@ function playNarration() {
 function advanceAudioExperience() {
   clearAutoAdvance();
   if (currentStep === 2) {
-    remainingSeconds = 180;
+    remainingSeconds = 120;
     currentStep = 3;
     renderStep();
     startTimer();
@@ -219,7 +219,7 @@ function renderStep() {
   const startButton = document.querySelector("#start-timer");
   if (startButton) {
     startButton.addEventListener("click", () => {
-      remainingSeconds = 180;
+      remainingSeconds = 120;
       currentStep = 3;
       renderStep();
       startTimer();
@@ -243,8 +243,8 @@ function renderStep() {
 }
 
 function timerPhase(seconds) {
-  if (seconds > 120) return "Le son le plus proche.";
-  if (seconds > 60) return "Le son le plus lointain.";
+  if (seconds > 80) return "Le son le plus proche.";
+  if (seconds > 40) return "Le son le plus lointain.";
   return "Tous les sons ensemble. Sans les nommer.";
 }
 
@@ -261,7 +261,7 @@ function updateTimerDisplay() {
   if (!phase || !time || !ring) return;
   phase.textContent = timerPhase(remainingSeconds);
   time.textContent = formatTime(remainingSeconds);
-  ring.style.setProperty("--progress", `${((180 - remainingSeconds) / 180) * 360}deg`);
+  ring.style.setProperty("--progress", `${((120 - remainingSeconds) / 120) * 360}deg`);
 }
 
 function startTimer() {
@@ -305,7 +305,7 @@ function startTimer() {
 
   resetButton.addEventListener("click", () => {
     stopTimer();
-    remainingSeconds = 180;
+    remainingSeconds = 120;
     updateTimerDisplay();
     pauseButton.textContent = "Commencer";
     narrationAudio.currentTime = 0;
