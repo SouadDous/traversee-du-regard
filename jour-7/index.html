@@ -7,7 +7,7 @@
     <meta name="description" content="Jour 7 de La Traversée du regard — LÀ." />
     <title>Jour 7 — LÀ | Éditions LÀ</title>
     <link rel="stylesheet" href="../styles.css" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2" />
   </head>
   <body>
     <main class="experience" aria-live="polite">
@@ -16,13 +16,15 @@
         <span id="progress-label">1 / 10</span>
         <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
       </div>
+      <button class="voice-control" id="voice-control" type="button" hidden>Mode audio · Pause</button>
       <section class="stage" id="stage" tabindex="-1"></section>
       <nav class="navigation" aria-label="Navigation entre les étapes">
         <button class="nav-button nav-back" id="back" type="button" aria-label="Étape précédente"><span aria-hidden="true">←</span></button>
         <button class="nav-button nav-next" id="next" type="button" aria-label="Étape suivante"><span aria-hidden="true">→</span></button>
       </nav>
     </main>
+    <audio id="narration-audio" preload="auto"></audio>
     <noscript>Cette expérience nécessite JavaScript pour progresser d’un écran à l’autre.</noscript>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
   </body>
 </html>

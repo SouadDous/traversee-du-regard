@@ -3,6 +3,21 @@ const backButton = document.querySelector("#back");
 const nextButton = document.querySelector("#next");
 const progressLabel = document.querySelector("#progress-label");
 const progressFill = document.querySelector("#progress-fill");
+const narrationAudio = document.querySelector("#narration-audio");
+const voiceControl = document.querySelector("#voice-control");
+
+const audioFiles = [
+  "jour-7-ecran-1.mp3",
+  "jour-7-ecran-2.mp3",
+  "jour-7-ecran-3.mp3",
+  "jour-7-ecran-4.mp3",
+  "jour-7-ecran-5.mp3",
+  "jour-7-ecran-6.mp3",
+  "jour-7-ecran-7.mp3",
+  "jour-7-ecran-8.mp3",
+  "jour-7-ecran-9.mp3",
+  "jour-7-ecran-10.mp3",
+];
 
 const steps = [
   {
@@ -16,7 +31,12 @@ const steps = [
           <p class="quiet">L’expérience dure environ cinq minutes.</p>
         </div>
         <div class="horizon" aria-hidden="true"></div>
+        <div class="mode-actions" id="experience-mode">
+          <button class="primary" id="choose-audio" type="button">Écouter l’expérience</button>
+          <button class="secondary-button" id="choose-reading" type="button">Lire l’expérience</button>
+        </div>
       </div>`,
+    manual: true,
   },
   {
     html: `
@@ -135,10 +155,105 @@ const steps = [
 
 let currentStep = 0;
 let pauseId = null;
+let pauseDeadline = 0;
+let pauseRemaining = 0;
+let pauseComplete = false;
+let experienceMode = null;
+let autoAdvanceId = null;
+let autoAdvanceDeadline = 0;
+let autoAdvanceRemaining = 2000;
+let narrationComplete = false;
+let audioPaused = false;
 
 function clearPause() {
   if (pauseId) window.clearTimeout(pauseId);
   pauseId = null;
+  pauseDeadline = 0;
+  pauseRemaining = 0;
+  pauseComplete = false;
+}
+
+function clearAutoAdvance() {
+  if (autoAdvanceId) window.clearTimeout(autoAdvanceId);
+  autoAdvanceId = null;
+  autoAdvanceDeadline = 0;
+  autoAdvanceRemaining = 2000;
+}
+
+function stopNarration() {
+  clearAutoAdvance();
+  narrationAudio.pause();
+  narrationAudio.currentTime = 0;
+  narrationComplete = false;
+  audioPaused = false;
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function playNarration() {
+  if (experienceMode !== "audio") return;
+  narrationComplete = false;
+  audioPaused = false;
+  narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(() => {});
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function advanceAudioExperience() {
+  clearAutoAdvance();
+  if (currentStep < steps.length - 1) {
+    currentStep += 1;
+    renderStep();
+  }
+}
+
+function scheduleAutoAdvance(delay = 2000) {
+  if (experienceMode !== "audio" || steps[currentStep].manual || steps[currentStep].final) return;
+  autoAdvanceRemaining = delay;
+  autoAdvanceDeadline = Date.now() + delay;
+  autoAdvanceId = window.setTimeout(advanceAudioExperience, delay);
+}
+
+function completeStepPause() {
+  pauseId = null;
+  pauseDeadline = 0;
+  pauseRemaining = 0;
+  pauseComplete = true;
+
+  if (experienceMode === "audio") {
+    if (narrationComplete) scheduleAutoAdvance();
+    return;
+  }
+
+  nextButton.hidden = false;
+  nextButton.focus();
+}
+
+function startStepPause(delay) {
+  pauseRemaining = delay;
+  pauseDeadline = Date.now() + delay;
+  pauseId = window.setTimeout(completeStepPause, delay);
+}
+
+function freezeStepPause() {
+  if (!pauseId) return;
+  pauseRemaining = Math.max(0, pauseDeadline - Date.now());
+  window.clearTimeout(pauseId);
+  pauseId = null;
+  pauseDeadline = 0;
+}
+
+function resumeStepPause() {
+  if (pauseComplete || pauseId || pauseRemaining <= 0) return;
+  startStepPause(pauseRemaining);
+}
+
+function setExperienceMode(mode) {
+  experienceMode = mode;
+  voiceControl.hidden = mode !== "audio";
+  nextButton.hidden = false;
+  document.querySelector("#experience-mode")?.remove();
+  if (mode === "audio") playNarration();
 }
 
 function updateProgress() {
@@ -148,12 +263,16 @@ function updateProgress() {
 
 function renderStep() {
   clearPause();
+  stopNarration();
   stage.innerHTML = steps[currentStep].html;
   updateProgress();
   backButton.hidden = currentStep === 0;
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].pause || steps[currentStep].final);
+  voiceControl.hidden = experienceMode !== "audio";
   stage.focus({ preventScroll: true });
 
+  document.querySelector("#choose-audio")?.addEventListener("click", () => setExperienceMode("audio"));
+  document.querySelector("#choose-reading")?.addEventListener("click", () => setExperienceMode("reading"));
   document.querySelector("#glass-ready")?.addEventListener("click", () => {
     currentStep = 2;
     renderStep();
@@ -161,16 +280,13 @@ function renderStep() {
 
   document.querySelector("#restart")?.addEventListener("click", () => {
     currentStep = 0;
+    experienceMode = null;
+    voiceControl.hidden = true;
     renderStep();
   });
 
-  if (steps[currentStep].pause) {
-    pauseId = window.setTimeout(() => {
-      pauseId = null;
-      nextButton.hidden = false;
-      nextButton.focus();
-    }, steps[currentStep].pause * 1000);
-  }
+  if (steps[currentStep].pause) startStepPause(steps[currentStep].pause * 1000);
+  if (experienceMode === "audio") playNarration();
 }
 
 backButton.addEventListener("click", () => {
@@ -185,6 +301,46 @@ nextButton.addEventListener("click", () => {
     currentStep += 1;
     renderStep();
   }
+});
+
+voiceControl.addEventListener("click", () => {
+  if (autoAdvanceId) {
+    autoAdvanceRemaining = Math.max(0, autoAdvanceDeadline - Date.now());
+    window.clearTimeout(autoAdvanceId);
+    autoAdvanceId = null;
+    audioPaused = true;
+    voiceControl.textContent = "Mode audio · Reprendre";
+    return;
+  }
+
+  if (audioPaused && narrationAudio.ended) {
+    audioPaused = false;
+    voiceControl.textContent = "Mode audio · Pause";
+    if (steps[currentStep].pause && !pauseComplete) resumeStepPause();
+    else scheduleAutoAdvance(autoAdvanceRemaining);
+    return;
+  }
+
+  if (narrationAudio.paused) {
+    if (narrationAudio.ended) narrationAudio.currentTime = 0;
+    narrationAudio.play().catch(() => {});
+    if (steps[currentStep].pause && !pauseComplete) resumeStepPause();
+    audioPaused = false;
+    voiceControl.textContent = "Mode audio · Pause";
+  } else {
+    narrationAudio.pause();
+    if (steps[currentStep].pause && !pauseComplete) freezeStepPause();
+    audioPaused = true;
+    voiceControl.textContent = "Mode audio · Reprendre";
+  }
+});
+
+narrationAudio.addEventListener("ended", () => {
+  if (experienceMode !== "audio") return;
+  narrationComplete = true;
+  if (steps[currentStep].manual || steps[currentStep].final) return;
+  if (steps[currentStep].pause && !pauseComplete) return;
+  scheduleAutoAdvance();
 });
 
 document.addEventListener("keydown", (event) => {
