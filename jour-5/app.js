@@ -70,10 +70,10 @@ const steps = [
     html: `
       <div class="stage-inner timer-wrap">
         <p class="eyebrow">L’observation</p>
-        <div class="timer-ring" id="timer-ring" role="timer" aria-label="Quarante-cinq secondes d’observation">
+        <div class="timer-ring" id="timer-ring" role="timer" aria-label="Trente secondes d’observation">
           <div class="timer-content">
             <div class="timer-phase" id="timer-phase">Regardez ce que vous appelez imparfait.</div>
-            <div class="timer-time" id="timer-time">00:45</div>
+            <div class="timer-time" id="timer-time">00:30</div>
           </div>
         </div>
         <div class="timer-actions">
@@ -132,7 +132,7 @@ const steps = [
         <p class="eyebrow">Jour 5 · Fin</p>
         <h2>La Traversée continue là où vous êtes.</h2>
         <div class="copy"><p>Demain, nous regarderons la frontière que nous traçons entre nous et ce qui nous entoure.</p></div>
-        <a class="primary" href="https://www.editionsla.com/la-traversee">Quitter l’expérience</a>
+        <a class="primary" href="https://www.editionsla.com/">Quitter l’expérience</a>
         <div class="restart-action"><button class="text-button" id="restart" type="button">Recommencer</button></div>
       </div>`,
     final: true,
@@ -141,8 +141,9 @@ const steps = [
 
 let currentStep = 0;
 let timerId = null;
-let remainingSeconds = 45;
+let remainingSeconds = 30;
 let timerRunning = false;
+let observationFinishing = false;
 let experienceMode = null;
 let autoAdvanceId = null;
 let autoAdvanceDeadline = 0;
@@ -160,6 +161,7 @@ function stopTimer() {
   if (timerId) window.clearInterval(timerId);
   timerId = null;
   timerRunning = false;
+  observationFinishing = false;
   narrationAudio.pause();
   narrationAudio.currentTime = 0;
 }
@@ -184,7 +186,7 @@ function playNarration() {
 function advanceAudioExperience() {
   clearAutoAdvance();
   if (currentStep === 2) {
-    remainingSeconds = 45;
+    remainingSeconds = 30;
     currentStep = 3;
     renderStep();
     startTimer();
@@ -227,7 +229,7 @@ function renderStep() {
   stage.focus({ preventScroll: true });
 
   function beginObservation() {
-    remainingSeconds = 45;
+    remainingSeconds = 30;
     currentStep = 3;
     renderStep();
     startTimer();
@@ -248,7 +250,7 @@ function renderStep() {
 }
 
 function timerPhase(seconds) {
-  if (seconds > 25) return "Observez l’impulsion de corriger. Que voudrait-elle changer ?";
+  if (seconds > 15) return "Observez l’impulsion de corriger. Que voudrait-elle changer ?";
   return "Retirez l’image de ce que cette chose devrait être. Regardez-la sans la corriger.";
 }
 
@@ -265,15 +267,27 @@ function updateTimerDisplay() {
   if (!phase || !time || !ring) return;
   phase.textContent = timerPhase(remainingSeconds);
   time.textContent = formatTime(remainingSeconds);
-  ring.style.setProperty("--progress", `${((45 - remainingSeconds) / 45) * 360}deg`);
+  ring.style.setProperty("--progress", `${((30 - remainingSeconds) / 30) * 360}deg`);
 }
 
 function startTimer() {
   timerRunning = true;
   updateTimerDisplay();
-  narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
-  narrationAudio.currentTime = 0;
-  if (experienceMode === "audio") narrationAudio.play().catch(() => {});
+  if (experienceMode === "audio") {
+    narrationAudio.src = `${audioFiles[currentStep]}?v=2`;
+    narrationAudio.currentTime = 0;
+    narrationAudio.play().catch(() => {});
+  } else {
+    narrationAudio.src = "son-signature-editions-la.mp3?v=1";
+    narrationAudio.muted = true;
+    narrationAudio.play().then(() => {
+      narrationAudio.pause();
+      narrationAudio.currentTime = 0;
+      narrationAudio.muted = false;
+    }).catch(() => {
+      narrationAudio.muted = false;
+    });
+  }
   const pauseButton = document.querySelector("#pause-timer");
   const resetButton = document.querySelector("#reset-timer");
 
@@ -296,7 +310,7 @@ function startTimer() {
 
   resetButton.addEventListener("click", () => {
     stopTimer();
-    remainingSeconds = 45;
+    remainingSeconds = 30;
     updateTimerDisplay();
     timerRunning = true;
     pauseButton.textContent = "Pause";
@@ -315,12 +329,33 @@ function runTimer() {
     remainingSeconds -= 1;
     updateTimerDisplay();
     if (remainingSeconds <= 0) {
-      stopTimer();
-      remainingSeconds = 45;
-      currentStep = 4;
-      renderStep();
+      finishObservation();
     }
   }, 1000);
+}
+
+function finishObservation() {
+  if (timerId) window.clearInterval(timerId);
+  timerId = null;
+  timerRunning = false;
+  observationFinishing = true;
+  remainingSeconds = 0;
+  updateTimerDisplay();
+
+  const pauseButton = document.querySelector("#pause-timer");
+  if (pauseButton) pauseButton.disabled = true;
+
+  narrationAudio.pause();
+  narrationAudio.src = "son-signature-editions-la.mp3?v=1";
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(() => {
+    currentStep = 4;
+    renderStep();
+  });
+  narrationAudio.addEventListener("ended", () => {
+    currentStep = 4;
+    renderStep();
+  }, { once: true });
 }
 
 backButton.addEventListener("click", () => {
@@ -338,8 +373,19 @@ nextButton.addEventListener("click", () => {
 });
 
 voiceControl.addEventListener("click", () => {
-  if (steps[currentStep].timer) {
+  if (steps[currentStep].timer && !observationFinishing) {
     document.querySelector("#pause-timer")?.click();
+    return;
+  }
+
+  if (observationFinishing) {
+    if (narrationAudio.paused) {
+      narrationAudio.play().catch(() => {});
+      voiceControl.textContent = "Mode audio · Pause";
+    } else {
+      narrationAudio.pause();
+      voiceControl.textContent = "Mode audio · Reprendre";
+    }
     return;
   }
 
