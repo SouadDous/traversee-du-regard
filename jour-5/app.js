@@ -187,6 +187,7 @@ function renderStep() {
   updateProgress();
   backButton.hidden = currentStep === 0;
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].timer || steps[currentStep].final);
+  voiceControl.hidden = experienceMode !== "audio" || Boolean(steps[currentStep].timer);
   stage.focus({ preventScroll: true });
 
   function beginObservation() {
@@ -299,11 +300,18 @@ nextButton.addEventListener("click", () => {
 
 voiceControl.addEventListener("click", () => {
   if (narrationAudio.paused) {
+    if (narrationAudio.ended) narrationAudio.currentTime = 0;
     narrationAudio.play().catch(() => {});
     voiceControl.textContent = "Mode audio · Pause";
   } else {
     narrationAudio.pause();
     voiceControl.textContent = "Mode audio · Reprendre";
+  }
+});
+
+narrationAudio.addEventListener("ended", () => {
+  if (experienceMode === "audio" && !steps[currentStep].timer) {
+    voiceControl.textContent = "Mode audio · Réécouter";
   }
 });
 
