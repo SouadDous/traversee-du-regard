@@ -3,6 +3,21 @@ const backButton = document.querySelector("#back");
 const nextButton = document.querySelector("#next");
 const progressLabel = document.querySelector("#progress-label");
 const progressFill = document.querySelector("#progress-fill");
+const narrationAudio = document.querySelector("#narration-audio");
+const voiceControl = document.querySelector("#voice-control");
+
+const audioFiles = [
+  "jour-6-ecran-1.mp3",
+  "jour-6-ecran-2.mp3",
+  "jour-6-ecran-3.mp3",
+  "jour-6-consigne-1.mp3",
+  "jour-6-consigne-2.mp3",
+  "jour-6-consigne-3.mp3",
+  "jour-6-ecran-7.mp3",
+  "jour-6-ecran-8.mp3",
+  "jour-6-ecran-9.mp3",
+  "jour-6-ecran-10.mp3",
+];
 
 function timerScreen(eyebrow, instruction, detail) {
   return `
@@ -30,26 +45,33 @@ const steps = [
         <h1>Séparer</h1>
         <div class="copy">
           <p>Nous disons&nbsp;: mon corps, la chaise, l’air, le monde autour de moi.</p>
+          <p>Nous traçons des frontières pour distinguer les choses.</p>
+          <p>Aujourd’hui, nous regarderons ce qui se passe à l’endroit même où elles se rencontrent.</p>
         </div>
-        <p class="prompt">Mais où l’un finit-il exactement et où l’autre commence-t-il&nbsp;?</p>
+        <p class="prompt">Où le corps finit-il exactement&nbsp;?<br />Où le monde commence-t-il&nbsp;?</p>
         <div class="copy"><p class="quiet">L’expérience dure environ cinq minutes.</p></div>
         <div class="horizon" aria-hidden="true"></div>
+        <div class="mode-actions" id="experience-mode">
+          <button class="primary" id="choose-audio" type="button">Écouter l’expérience</button>
+          <button class="secondary-button" id="choose-reading" type="button">Lire l’expérience</button>
+        </div>
       </div>`,
+    manual: true,
   },
   {
     html: `
       <div class="stage-inner">
         <p class="eyebrow">Prendre place</p>
-        <h2>Asseyez-vous ou restez debout dans une position confortable.</h2>
+        <h2>Asseyez-vous, ou restez debout dans une position confortable.</h2>
         <div class="copy">
-          <p>Ne fermez pas nécessairement les yeux.</p>
-          <p>Remarquez les endroits où votre corps rencontre ce qui l’entoure.</p>
+          <p>Vous pouvez garder les yeux ouverts.</p>
+          <p>Sans modifier votre posture, remarquez les endroits où votre corps rencontre ce qui l’entoure&nbsp;:</p>
         </div>
         <ul class="contacts">
           <li>le sol</li>
           <li>le siège</li>
-          <li>un vêtement</li>
-          <li>l’air sur la peau</li>
+          <li>vos vêtements</li>
+          <li>l’air sur votre peau</li>
         </ul>
       </div>`,
   },
@@ -57,13 +79,16 @@ const steps = [
     html: `
       <div class="stage-inner">
         <p class="eyebrow">La proposition</p>
-        <h2>Pendant 90 secondes, observez trois formes de contact.</h2>
+        <h2>Pendant quatre-vingt-dix secondes, observez trois formes de contact.</h2>
         <ul class="contacts">
           <li>ce qui vous porte</li>
           <li>l’air qui entre et sort</li>
-          <li>ce qui vous atteint sans être touché</li>
+          <li>ce qui vous atteint sans vous toucher</li>
         </ul>
-        <div class="copy"><p class="quiet">Ne modifiez pas votre respiration. Ne cherchez aucun état particulier.</p></div>
+        <div class="copy">
+          <p>Ne modifiez pas votre respiration.</p>
+          <p class="quiet">Ne cherchez aucun état particulier.</p>
+        </div>
         <button class="primary" id="start-observation" type="button">Commencer l’expérience</button>
       </div>`,
     manual: true,
@@ -71,8 +96,8 @@ const steps = [
   {
     html: timerScreen(
       "Première phase · Le contact",
-      "Sentez le poids du corps rencontrer le sol ou le siège.",
-      "Pouvez-vous trouver une ligne précise séparant la sensation du support&nbsp;?"
+      "Sentez le poids de votre corps rencontrer le sol ou le siège.",
+      "Pouvez-vous trouver une ligne précise séparant la sensation de ce qui vous porte&nbsp;?"
     ),
     timer: true,
   },
@@ -80,7 +105,7 @@ const steps = [
     html: timerScreen(
       "Deuxième phase · L’air",
       "Remarquez l’air qui entre et sort naturellement.",
-      "Quelque chose qui était dehors devient continuellement une part de votre respiration."
+      "Ce qui était dehors entre en vous. Ce qui était en vous retourne au monde."
     ),
     timer: true,
   },
@@ -96,8 +121,8 @@ const steps = [
     html: `
       <div class="stage-inner">
         <p class="eyebrow">Après l’expérience</p>
-        <h2>Ouvrez pleinement le regard autour de vous.</h2>
-        <p class="prompt">Étiez-vous devant votre environnement, ou déjà au milieu de lui&nbsp;?</p>
+        <h2>Regardez maintenant autour de vous.</h2>
+        <p class="prompt">Étiez-vous face à votre environnement, ou déjà au milieu de lui&nbsp;?</p>
         <div class="copy"><p class="quiet">Il n’est pas nécessaire de trouver une réponse.</p></div>
       </div>`,
   },
@@ -107,7 +132,8 @@ const steps = [
         <p class="eyebrow">Ce qui demeure</p>
         <h2>La frontière du corps existe.</h2>
         <div class="copy">
-          <p>Elle protège, distingue et rend la relation possible. Mais elle n’est pas une muraille immobile.</p>
+          <p>Elle protège. Elle distingue. Elle rend la relation possible.</p>
+          <p>Mais elle n’est pas une muraille immobile.</p>
           <p>À chaque instant, quelque chose circule entre ce que nous appelons «&nbsp;moi&nbsp;» et ce que nous appelons «&nbsp;le monde&nbsp;».</p>
         </div>
       </div>`,
@@ -116,10 +142,10 @@ const steps = [
     html: `
       <div class="stage-inner">
         <p class="eyebrow">Emporter l’expérience</p>
-        <h2>Lors d’un passage entre intérieur et extérieur, arrêtez-vous quelques secondes.</h2>
+        <h2>Lorsque vous franchirez un seuil, arrêtez-vous quelques secondes.</h2>
         <div class="copy">
-          <p>Une porte, une fenêtre, un seuil, une sortie.</p>
-          <p>Remarquez l’air, la lumière ou la température qui change.</p>
+          <p>Une porte. Une entrée. Une sortie.</p>
+          <p>Remarquez le moment où l’air, la lumière ou la température change.</p>
         </div>
         <p class="prompt">Où commence vraiment le dehors&nbsp;?</p>
       </div>`,
@@ -128,8 +154,9 @@ const steps = [
     html: `
       <div class="stage-inner">
         <p class="eyebrow">Jour 6 · Fin</p>
-        <h2>Nous ne regardons pas le monde depuis l’extérieur. Nous sommes déjà en lui.</h2>
+        <h2>Nous ne regardons pas le monde depuis l’extérieur.</h2>
         <div class="copy">
+          <p>Nous sommes déjà en lui.</p>
           <p>Demain, il ne restera rien à ajouter.</p>
           <p>Seulement revenir à ce qui est là.</p>
         </div>
@@ -144,11 +171,69 @@ let currentStep = 0;
 let timerId = null;
 let remainingSeconds = 30;
 let timerRunning = false;
+let observationFinishing = false;
+let experienceMode = null;
+let autoAdvanceId = null;
+let autoAdvanceDeadline = 0;
+let autoAdvanceRemaining = 2000;
+let audioPaused = false;
+
+function clearAutoAdvance() {
+  if (autoAdvanceId) window.clearTimeout(autoAdvanceId);
+  autoAdvanceId = null;
+  autoAdvanceDeadline = 0;
+  autoAdvanceRemaining = 2000;
+}
 
 function stopTimer() {
   if (timerId) window.clearInterval(timerId);
   timerId = null;
   timerRunning = false;
+}
+
+function stopNarration() {
+  clearAutoAdvance();
+  narrationAudio.pause();
+  narrationAudio.currentTime = 0;
+  audioPaused = false;
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function playNarration() {
+  if (experienceMode !== "audio") return;
+  audioPaused = false;
+  narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(() => {});
+  voiceControl.textContent = "Mode audio · Pause";
+}
+
+function advanceAudioExperience() {
+  clearAutoAdvance();
+  if (currentStep === 2) {
+    currentStep = 3;
+    renderStep();
+    return;
+  }
+  if (currentStep < steps.length - 1) {
+    currentStep += 1;
+    renderStep();
+  }
+}
+
+function scheduleAutoAdvance(delay = 2000) {
+  if (experienceMode !== "audio" || steps[currentStep].timer || currentStep === steps.length - 1) return;
+  autoAdvanceRemaining = delay;
+  autoAdvanceDeadline = Date.now() + delay;
+  autoAdvanceId = window.setTimeout(advanceAudioExperience, delay);
+}
+
+function setExperienceMode(mode) {
+  experienceMode = mode;
+  voiceControl.hidden = mode !== "audio";
+  nextButton.hidden = false;
+  document.querySelector("#experience-mode")?.remove();
+  if (mode === "audio") playNarration();
 }
 
 function updateProgress() {
@@ -158,12 +243,17 @@ function updateProgress() {
 
 function renderStep() {
   stopTimer();
+  stopNarration();
+  observationFinishing = false;
   stage.innerHTML = steps[currentStep].html;
   updateProgress();
   backButton.hidden = currentStep === 0;
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].timer || steps[currentStep].final);
+  voiceControl.hidden = experienceMode !== "audio";
   stage.focus({ preventScroll: true });
 
+  document.querySelector("#choose-audio")?.addEventListener("click", () => setExperienceMode("audio"));
+  document.querySelector("#choose-reading")?.addEventListener("click", () => setExperienceMode("reading"));
   document.querySelector("#start-observation")?.addEventListener("click", () => {
     currentStep = 3;
     renderStep();
@@ -171,13 +261,13 @@ function renderStep() {
 
   document.querySelector("#restart")?.addEventListener("click", () => {
     currentStep = 0;
+    experienceMode = null;
+    voiceControl.hidden = true;
     renderStep();
   });
 
-  if (steps[currentStep].timer) {
-    remainingSeconds = 30;
-    startTimer();
-  }
+  if (steps[currentStep].timer) startTimer();
+  else if (experienceMode === "audio") playNarration();
 }
 
 function formatTime(seconds) {
@@ -193,18 +283,30 @@ function updateTimerDisplay() {
 }
 
 function startTimer() {
+  remainingSeconds = 30;
   timerRunning = true;
   updateTimerDisplay();
+
+  if (experienceMode === "audio") {
+    narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
+    narrationAudio.currentTime = 0;
+    narrationAudio.play().catch(() => {});
+  }
+
   const pauseButton = document.querySelector("#pause-timer");
   const resetButton = document.querySelector("#reset-timer");
 
   pauseButton.addEventListener("click", () => {
     if (timerRunning) {
       stopTimer();
+      if (experienceMode === "audio") narrationAudio.pause();
       pauseButton.textContent = "Reprendre";
+      if (experienceMode === "audio") voiceControl.textContent = "Mode audio · Reprendre";
     } else {
       timerRunning = true;
       pauseButton.textContent = "Pause";
+      if (experienceMode === "audio" && !narrationAudio.ended) narrationAudio.play().catch(() => {});
+      if (experienceMode === "audio") voiceControl.textContent = "Mode audio · Pause";
       runTimer();
     }
   });
@@ -215,6 +317,11 @@ function startTimer() {
     updateTimerDisplay();
     timerRunning = true;
     pauseButton.textContent = "Pause";
+    if (experienceMode === "audio") {
+      narrationAudio.currentTime = 0;
+      narrationAudio.play().catch(() => {});
+      voiceControl.textContent = "Mode audio · Pause";
+    }
     runTimer();
   });
 
@@ -226,12 +333,34 @@ function runTimer() {
   timerId = window.setInterval(() => {
     remainingSeconds -= 1;
     updateTimerDisplay();
-    if (remainingSeconds <= 0) {
-      stopTimer();
-      currentStep += 1;
-      renderStep();
-    }
+    if (remainingSeconds <= 0) finishTimedPhase();
   }, 1000);
+}
+
+function finishTimedPhase() {
+  stopTimer();
+  remainingSeconds = 0;
+  updateTimerDisplay();
+
+  if (currentStep < 5) {
+    currentStep += 1;
+    renderStep();
+    return;
+  }
+
+  observationFinishing = true;
+  const pauseButton = document.querySelector("#pause-timer");
+  if (pauseButton) pauseButton.disabled = true;
+  narrationAudio.pause();
+  narrationAudio.src = "../son-signature-editions-la.mp3?v=1";
+  narrationAudio.currentTime = 0;
+  narrationAudio.play().catch(showPostObservation);
+  narrationAudio.addEventListener("ended", showPostObservation, { once: true });
+}
+
+function showPostObservation() {
+  currentStep = 6;
+  renderStep();
 }
 
 backButton.addEventListener("click", () => {
@@ -245,6 +374,57 @@ nextButton.addEventListener("click", () => {
   if (currentStep < steps.length - 1) {
     currentStep += 1;
     renderStep();
+  }
+});
+
+voiceControl.addEventListener("click", () => {
+  if (steps[currentStep].timer && !observationFinishing) {
+    document.querySelector("#pause-timer")?.click();
+    return;
+  }
+
+  if (observationFinishing) {
+    if (narrationAudio.paused) {
+      narrationAudio.play().catch(() => {});
+      voiceControl.textContent = "Mode audio · Pause";
+    } else {
+      narrationAudio.pause();
+      voiceControl.textContent = "Mode audio · Reprendre";
+    }
+    return;
+  }
+
+  if (autoAdvanceId) {
+    autoAdvanceRemaining = Math.max(0, autoAdvanceDeadline - Date.now());
+    window.clearTimeout(autoAdvanceId);
+    autoAdvanceId = null;
+    audioPaused = true;
+    voiceControl.textContent = "Mode audio · Reprendre";
+    return;
+  }
+
+  if (audioPaused && narrationAudio.ended) {
+    audioPaused = false;
+    voiceControl.textContent = "Mode audio · Pause";
+    scheduleAutoAdvance(autoAdvanceRemaining);
+    return;
+  }
+
+  if (narrationAudio.paused) {
+    if (narrationAudio.ended) narrationAudio.currentTime = 0;
+    narrationAudio.play().catch(() => {});
+    audioPaused = false;
+    voiceControl.textContent = "Mode audio · Pause";
+  } else {
+    narrationAudio.pause();
+    audioPaused = true;
+    voiceControl.textContent = "Mode audio · Reprendre";
+  }
+});
+
+narrationAudio.addEventListener("ended", () => {
+  if (experienceMode === "audio" && !steps[currentStep].timer && !observationFinishing) {
+    scheduleAutoAdvance();
   }
 });
 
