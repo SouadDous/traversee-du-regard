@@ -144,6 +144,17 @@ let timerId = null;
 let remainingSeconds = 45;
 let timerRunning = false;
 let experienceMode = null;
+let autoAdvanceId = null;
+let autoAdvanceDeadline = 0;
+let autoAdvanceRemaining = 2000;
+let audioPaused = false;
+
+function clearAutoAdvance() {
+  if (autoAdvanceId) window.clearTimeout(autoAdvanceId);
+  autoAdvanceId = null;
+  autoAdvanceDeadline = 0;
+  autoAdvanceRemaining = 2000;
+}
 
 function stopTimer() {
   if (timerId) window.clearInterval(timerId);
@@ -154,17 +165,42 @@ function stopTimer() {
 }
 
 function stopNarration() {
+  clearAutoAdvance();
   narrationAudio.pause();
   narrationAudio.currentTime = 0;
+  audioPaused = false;
   voiceControl.textContent = "Mode audio · Pause";
 }
 
 function playNarration() {
   if (experienceMode !== "audio") return;
+  audioPaused = false;
   narrationAudio.src = `${audioFiles[currentStep]}?v=1`;
   narrationAudio.currentTime = 0;
   narrationAudio.play().catch(() => {});
   voiceControl.textContent = "Mode audio · Pause";
+}
+
+function advanceAudioExperience() {
+  clearAutoAdvance();
+  if (currentStep === 2) {
+    remainingSeconds = 45;
+    currentStep = 3;
+    renderStep();
+    startTimer();
+    return;
+  }
+  if (currentStep < steps.length - 1) {
+    currentStep += 1;
+    renderStep();
+  }
+}
+
+function scheduleAutoAdvance(delay = 2000) {
+  if (experienceMode !== "audio" || currentStep === 3 || currentStep === steps.length - 1) return;
+  autoAdvanceRemaining = delay;
+  autoAdvanceDeadline = Date.now() + delay;
+  autoAdvanceId = window.setTimeout(advanceAudioExperience, delay);
 }
 
 function setExperienceMode(mode) {
@@ -187,7 +223,7 @@ function renderStep() {
   updateProgress();
   backButton.hidden = currentStep === 0;
   nextButton.hidden = Boolean(steps[currentStep].manual || steps[currentStep].timer || steps[currentStep].final);
-  voiceControl.hidden = experienceMode !== "audio" || Boolean(steps[currentStep].timer);
+  voiceControl.hidden = experienceMode !== "audio";
   stage.focus({ preventScroll: true });
 
   function beginObservation() {
@@ -248,10 +284,12 @@ function startTimer() {
       timerRunning = false;
       if (experienceMode === "audio") narrationAudio.pause();
       pauseButton.textContent = "Reprendre";
+      if (experienceMode === "audio") voiceControl.textContent = "Mode audio · Reprendre";
     } else {
       timerRunning = true;
       pauseButton.textContent = "Pause";
       if (experienceMode === "audio") narrationAudio.play().catch(() => {});
+      if (experienceMode === "audio") voiceControl.textContent = "Mode audio · Pause";
       runTimer();
     }
   });
@@ -264,6 +302,7 @@ function startTimer() {
     pauseButton.textContent = "Pause";
     narrationAudio.currentTime = 0;
     if (experienceMode === "audio") narrationAudio.play().catch(() => {});
+    if (experienceMode === "audio") voiceControl.textContent = "Mode audio · Pause";
     runTimer();
   });
 
@@ -299,20 +338,41 @@ nextButton.addEventListener("click", () => {
 });
 
 voiceControl.addEventListener("click", () => {
+  if (steps[currentStep].timer) {
+    document.querySelector("#pause-timer")?.click();
+    return;
+  }
+
+  if (autoAdvanceId) {
+    autoAdvanceRemaining = Math.max(0, autoAdvanceDeadline - Date.now());
+    window.clearTimeout(autoAdvanceId);
+    autoAdvanceId = null;
+    audioPaused = true;
+    voiceControl.textContent = "Mode audio · Reprendre";
+    return;
+  }
+
+  if (audioPaused && narrationAudio.ended) {
+    audioPaused = false;
+    voiceControl.textContent = "Mode audio · Pause";
+    scheduleAutoAdvance(autoAdvanceRemaining);
+    return;
+  }
+
   if (narrationAudio.paused) {
     if (narrationAudio.ended) narrationAudio.currentTime = 0;
     narrationAudio.play().catch(() => {});
+    audioPaused = false;
     voiceControl.textContent = "Mode audio · Pause";
   } else {
     narrationAudio.pause();
+    audioPaused = true;
     voiceControl.textContent = "Mode audio · Reprendre";
   }
 });
 
 narrationAudio.addEventListener("ended", () => {
-  if (experienceMode === "audio" && !steps[currentStep].timer) {
-    voiceControl.textContent = "Mode audio · Réécouter";
-  }
+  if (experienceMode === "audio" && !steps[currentStep].timer) scheduleAutoAdvance();
 });
 
 document.addEventListener("keydown", (event) => {
