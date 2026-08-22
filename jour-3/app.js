@@ -46,7 +46,7 @@ const steps = [
       <div class="stage-inner">
         <p class="eyebrow">Le fait seul</p>
         <h2>Formulez l’événement en une seule phrase.</h2>
-        <div class="copy"><p>Uniquement ce qu’une caméra aurait pu enregistrer.</p></div>
+        <div class="copy"><p>Uniquement ce que vous avez pu voir, entendre ou constater.</p></div>
         <div class="contrast">
           <p>«&nbsp;La personne n’a pas répondu à mon message.&nbsp;»</p>
           <p class="quiet">Et non&nbsp;: «&nbsp;Elle m’ignore.&nbsp;»</p>
